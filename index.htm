@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premium Biljämförelse</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family: 'Montserrat', sans-serif; }
+body { background:#0d0d0d; color:#f2f2f2; transition: background 0.5s, color 0.5s; line-height:1.5; }
+.light-mode { background:#f4f4f9; color:#0d0d0d; }
+
+header {
+    background: linear-gradient(90deg, #000000, #1a1a1a);
+    color:#f2c94c; text-align:center; padding:30px 20px; box-shadow:0 4px 15px rgba(0,0,0,0.7);
+    position: sticky; top:0; z-index:1000; transition: all 0.3s ease;
+}
+header.shrink { padding:10px 20px; font-size:0.9rem; }
+.light-mode header { background: linear-gradient(90deg, #ffffff, #e0e0e0); color:#0d0d0d; }
+header h1 { font-size:2.5rem; letter-spacing:2px; transition: font-size 0.3s ease; }
+header.shrink h1 { font-size:1.5rem; }
+
+nav { margin-top:10px; }
+nav a { color:#f2c94c; margin:0 15px; text-decoration:none; font-weight:700; transition: transform 0.3s; }
+nav a:hover { transform: scale(1.1); }
+.light-mode nav a { color:#0d0d0d; }
+
+.toggle-btn { position:absolute; top:50%; right:20px; transform:translateY(-50%);
+    padding:8px 16px; background:#f2c94c; color:#0d0d0d; border:none; border-radius:20px; cursor:pointer; font-weight:bold;
+}
+.toggle-btn:hover { background:#e6b800; transform:scale(1.05); }
+
+.controls { display:flex; flex-wrap:wrap; justify-content:center; gap:15px; margin:20px 0; }
+.controls input, .controls select { padding:10px 12px; border-radius:10px; border:none; outline:none; font-size:1rem; }
+
+.car-list { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:25px; padding:0 50px 50px 50px; }
+.flip-card { background:transparent; perspective:1000px; }
+.flip-card-inner { position:relative; width:100%; transition: transform 0.8s; transform-style: preserve-3d; }
+.flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+.flip-card-front, .flip-card-back {
+    position:relative; width:100%; backface-visibility:hidden; border-radius:25px;
+    padding:20px; box-shadow:0 8px 25px rgba(0,0,0,0.6); display:flex; flex-direction:column; align-items:center;
+}
+.flip-card-front { background: rgba(255,255,255,0.05); backdrop-filter:blur(10px); }
+.light-mode .flip-card-front { background: rgba(255,255,255,0.8); color:#0d0d0d; }
+.flip-card-back { background: rgba(242,201,76,0.1); color:#0d0d0d; transform: rotateY(180deg); text-align:center; }
+.light-mode .flip-card-back { background: rgba(242,201,76,0.2); color:#0d0d0d; }
+.flip-card img { width:100%; border-radius:20px; margin-bottom:15px; }
+.flip-card h3 { font-size:1.5rem; margin-bottom:10px; }
+.flip-card p { margin:5px 0; text-align:center; }
+
+.compare-btn, .car-card a { display:inline-block; margin-top:10px; padding:10px 16px;
+border:none; border-radius:15px; text-decoration:none; color:#0d0d0d; font-weight:bold; background:#f2c94c;
+transition: all 0.3s ease; cursor:pointer; }
+.compare-btn:hover, .car-card a:hover { background:#e6b800; transform:scale(1.05); }
+
+.comparison-panel { background: rgba(255,255,255,0.05); border-top:3px solid #f2c94c; padding:25px 50px;
+display:none; backdrop-filter: blur(10px); margin:50px 0 50px 0; transition: all 0.5s; }
+.light-mode .comparison-panel { background: rgba(0,0,0,0.05); }
+.comparison-panel table { width:100%; border-collapse:collapse; margin-bottom:15px; }
+.comparison-panel th, .comparison-panel td { border:1px solid rgba(255,255,255,0.3); padding:12px; text-align:center; }
+.comparison-panel th { background:#f2c94c; color:#0d0d0d; }
+
+.bar-legend { display:flex; justify-content:center; gap:15px; margin-bottom:15px; }
+.bar-legend div { display:flex; align-items:center; gap:5px; }
+.legend-color { width:20px; height:20px; border-radius:5px; }
+
+.bar-container { display:flex; justify-content:center; gap:25px; margin-top:10px; align-items:flex-end; min-height:200px; }
+.bar-group { display:flex; flex-direction:column; align-items:center; gap:5px; }
+.bar { width:25px; border-radius:10px 10px 0 0; transition: height 0.8s ease-out; }
+.bar-price { background:#f2c94c; }
+.bar-hp { background:#00aaff; }
+.bar-year { background:#a64ca6; }
+.light-mode .bar-price { background:#e6b800; }
+.light-mode .bar-hp { background:#0077cc; }
+.light-mode .bar-year { background:#8c3c8c; }
+.bar-label { font-size:0.9rem; text-align:center; margin-top:5px; }
+
+footer { background:#1a1a1a; color:#f2c94c; text-align:center; padding:20px; margin-top:50px; clear:both; }
+.light-mode footer { background:#e0e0e0; color:#0d0d0d; }
+
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+</style>
+</head>
+<body>
+
+<header id="mainHeader">
+<h1>Premium Biljämförelse</h1>
+<nav>
+<a href="#">Hem</a>
+<a href="#">Bilar</a>
+<a href="#">Om</a>
+<a href="#">Kontakt</a>
+</nav>
+<button class="toggle-btn" onclick="toggleMode()">Dark/Light</button>
+</header>
+ 
+<section class="controls">
+<input type="text" id="searchInput" placeholder="Sök bilmodell..." onkeyup="filterCars()">
+<select id="fuelFilter" onchange="filterCars()">
+<option value="">Alla bränslen</option>
+<option value="Bensin">Bensin</option>
+<option value="Diesel">Diesel</option>
+<option value="El">El</option>
+</select>
+<select id="seatFilter" onchange="filterCars()">
+<option value="">Alla säten</option>
+<option value="2">2</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="7">7</option>
+</select>
+</section>
+
+<section class="car-list" id="carList"></section>
+
+<div class="comparison-panel" id="comparisonPanel">
+<h2>Jämför Bilar</h2>
+
+<!-- Legend över staplar -->
+<div class="bar-legend">
+    <div><div class="legend-color" style="background:#f2c94c;"></div>Pris</div>
+    <div><div class="legend-color" style="background:#00aaff;"></div>Hästkrafter</div>
+    <div><div class="legend-color" style="background:#a64ca6;"></div>Årsmodell</div>
+</div>
+
+<table id="comparisonTable"><tr><th>Specifikation</th></tr></table>
+<div class="bar-container" id="barContainer"></div>
+<button class="compare-btn" onclick="clearComparison()">Rensa jämförelse</button>
+</div>
+
+<footer>&copy; 2025 Premium Biljämförelse – Alla rättigheter reserverade</footer>
+
+<script>
+// Scroll-funktion för att krympa header
+window.addEventListener('scroll', () => {
+    const header = document.getElementById('mainHeader');
+    if(window.scrollY > 50){
+        header.classList.add('shrink');
+    } else {
+        header.classList.remove('shrink');
+    }
+});
+
+const cars = [
+{ name:"Volvo XC60", price:450000, fuel:"Diesel", year:2020, hp:250, seats:5, description:"En säker och bekväm familjebil.", img:"https://via.placeholder.com/400x200?text=Volvo+XC60", link:"https://www.volvocars.com/se/cars/xc60" },
+{ name:"BMW X5", price:600000, fuel:"Bensin", year:2021, hp:300, seats:5, description:"Sportig SUV med hög prestanda.", img:"https://via.placeholder.com/400x200?text=BMW+X5", link:"https://www.bmw.se/sv/all-models/x-series/x5/2021/bmw-x5-inspire.html" },
+{ name:"Audi Q7", price:700000, fuel:"Diesel", year:2022, hp:340, seats:7, description:"Lyxig SUV för stora familjer.", img:"https://via.placeholder.com/400x200?text=Audi+Q7", link:"https://www.audi.se/sv/web/sv/models/q7/q7.html" }
+];
+
+const carList = document.getElementById('carList');
+const comparisonPanel = document.getElementById('comparisonPanel');
+const comparisonTable = document.getElementById('comparisonTable');
+const barContainer = document.getElementById('barContainer');
+let selectedCars = [];
+
+function renderCars(list){
+    carList.innerHTML="";
+    list.forEach(car=>{
+        const flipCard = document.createElement('div');
+        flipCard.classList.add('flip-card');
+        flipCard.innerHTML = `
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <img src="${car.img}" alt="${car.name}">
+                <h3>${car.name}</h3>
+                <p>Pris: ${car.price.toLocaleString()} kr</p>
+                <p>Bränsle: ${car.fuel}</p>
+                <p>Årsmodell: ${car.year}</p>
+            </div>
+            <div class="flip-card-back">
+                <h3>Detaljer</h3>
+                <p>${car.description}</p>
+                <p>Hästkrafter: ${car.hp} hk</p>
+                <p>Säten: ${car.seats}</p>
+            </div>
+        </div>
+        <button class="compare-btn" onclick="addToCompare('${car.name}')">Jämför</button>
+        <a href="${car.link}" target="_blank">Besök hemsida</a>`;
+        carList.appendChild(flipCard);
+    });
+}
+renderCars(cars);
+
+function filterCars(){
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const fuelValue = document.getElementById('fuelFilter').value;
+    const seatValue = document.getElementById('seatFilter').value;
+    const filtered = cars.filter(car=>{
+        const matchesSearch = car.name.toLowerCase().includes(searchValue);
+        const matchesFuel = fuelValue ? car.fuel===fuelValue:true;
+        const matchesSeats = seatValue ? car.seats==seatValue:true;
+        return matchesSearch && matchesFuel && matchesSeats;
+    });
+    renderCars(filtered);
+}
+
+function addToCompare(carName){
+    if(selectedCars.includes(carName)){ alert(carName+" är redan tillagd!"); return; }
+    selectedCars.push(carName);
+    comparisonPanel.style.display="block";
+    updateComparison();
+}
+
+function updateComparison(){
+    const specs = [
+        {label:"Pris", key:"price"},
+        {label:"Bränsle", key:"fuel"},
+        {label:"Årsmodell", key:"year"},
+        {label:"Hästkrafter", key:"hp"},
+        {label:"Säten", key:"seats"}
+    ];
+    comparisonTable.innerHTML="<tr><th>Specifikation</th>"+selectedCars.map(c=>`<th>${c}</th>`).join("")+"</tr>";
+    specs.forEach(spec=>{
+        let row = `<tr><td>${spec.label}</td>`;
+        selectedCars.forEach(carName=>{
+            const car = cars.find(c=>c.name===carName);
+            let value = car[spec.key];
+            if(spec.key==="price") value = value.toLocaleString()+" kr";
+            if(spec.key==="hp") value = value+" hk";
+            row += `<td>${value}</td>`;
+        });
+        row += "</tr>";
+        comparisonTable.innerHTML += row;
+    });
+
+    barContainer.innerHTML="";
+    selectedCars.forEach(carName=>{
+        const car = cars.find(c=>c.name===carName);
+        const group = document.createElement('div'); group.classList.add('bar-group');
+
+        const barPrice = document.createElement('div'); barPrice.classList.add('bar','bar-price'); barPrice.style.height="0px";
+        barPrice.title = `${car.name} Pris: ${car.price.toLocaleString()} kr`;
+
+        const barHp = document.createElement('div'); barHp.classList.add('bar','bar-hp'); barHp.style.height="0px";
+        barHp.title = `${car.name} Hästkrafter: ${car.hp} hk`;
+
+        const barYear = document.createElement('div'); barYear.classList.add('bar','bar-year'); barYear.style.height="0px";
+        barYear.title = `${car.name} Årsmodell: ${car.year}`;
+
+        const label = document.createElement('div'); label.classList.add('bar-label'); label.innerText = car.name;
+
+        group.appendChild(barPrice); group.appendChild(barHp); group.appendChild(barYear); group.appendChild(label);
+        barContainer.appendChild(group);
+
+        setTimeout(()=>{ 
+            barPrice.style.height = (car.price/15000)+"px";
+            barHp.style.height = (car.hp*0.8)+"px";
+            barYear.style.height = (car.year-1990)*5+"px";
+        },50);
+    });
+}
+
+function clearComparison(){ selectedCars=[]; comparisonPanel.style.display="none"; barContainer.innerHTML=""; }
+function toggleMode(){ document.body.classList.toggle('light-mode'); }
+</script>
+</body>
+</html>
+
+
+
+
+
+
